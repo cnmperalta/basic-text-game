@@ -1,51 +1,63 @@
 package game.entities;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import java.util.HashMap;
 
 public class Room {
     private int roomID;
-    // private HashMap<String, Room> adjacentRooms;
-    private List<Room> adjacentRooms;
+    private String roomStringID;
+    private String roomType;
+    private HashMap<String, Room> exits;
 
     public Room() {}
 
     public Room(int roomID) {
         this.roomID = roomID;
-        this.adjacentRooms = new LinkedList<Room>();
     }
 
-    public Room(int roomID, List<Room> adjacentRooms) {
+    public Room(int roomID, String roomStringID) {
         this.roomID = roomID;
-        this.adjacentRooms = new LinkedList<Room>(adjacentRooms);
+        this.roomStringID = roomStringID;
+        roomType = roomStringID.split("-")[0];
+        exits = new HashMap<String, Room>();
     }
 
+    /**
+     * @return the roomID
+     */
     public int getRoomID() {
         return roomID;
     }
 
-    public void setRoomID(int roomID) {
-        this.roomID = roomID;
-    }
-    
-    public List<Room> getAdjacentRooms() {
-        return adjacentRooms;
-    }
-
-    public void setAdjacentRooms(List<Room> adjacentRooms) {
-        this.adjacentRooms = new LinkedList<Room>(adjacentRooms);
+    /**
+     * @return the roomType
+     */
+    public String getRoomType() {
+        return roomType;
     }
 
-    public void addAdjacentRoom(Room room) {
-        adjacentRooms.add(room);
+    /**
+     * @return the roomStringID
+     */
+    public String getRoomStringID() {
+        return roomStringID;
     }
 
-    // @Override
-    // public boolean equals(Object obj) {
-    //     if(obj instanceof Room && this.roomID == ((Room) obj).getRoomID())
-    //         return true;
-    //     else
-    //         return false; 
-    // }
+    /**
+     * @return the exits
+     */
+    public HashMap<String, Room> getExits() {
+        return exits;
+    }
+
+    public void addExit(String direction, Room destination) {
+        if(!exits.containsKey(direction))
+            exits.put(direction, destination);
+        else
+            System.out.println("There is already a room in that direction.");
+    }
+
+    @Override
+    public String toString() {
+        return roomStringID;
+    }
 }

@@ -3,125 +3,136 @@ package game.logic;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
 import game.entities.Player;
 import game.entities.Room;
-// import game.entities.Item;
 
 public class Game {
-    public static void main(String[] args) {
-        Scanner sc = new  Scanner(System.in);
-        String playerName;
-        Player p = null;
-        List<Room> rooms = null;
-        // Room currentRoom = null;
+    private Player player;
+    private List<Room> rooms;
+    private Room currentRoom;
 
+    public Game(String configurationFile) {
+        initializeRooms(configurationFile);
+    }
+
+    private void initializeRooms(String configurationFile) {
+        try (BufferedReader br = new BufferedReader(new FileReader(configurationFile))) {
+            String line = br.readLine();
+            int numberOfRooms = 0;
+
+            if(line != null && (numberOfRooms = Integer.parseInt(line)) > 0) {
+                rooms = new LinkedList<Room>();
+
+                // Initialize rooms with no exits
+                for(int i = 0; i < numberOfRooms; i++) {
+                    line = br.readLine();
+                    rooms.add(new Room(i, line));
+                }
+
+                // Add exits to each room
+                for(int i = 0; i < numberOfRooms; i++) {
+                    Room tempRoom = null;
+                    String[] strs;
+
+                    line = br.readLine();
+                    strs = line.split(" ");
+                    tempRoom = findRoomByRoomStringID(strs[0]);
+                    for(int j = 1; j < strs.length; j += 2)
+                        tempRoom.addExit(strs[j], findRoomByRoomStringID(strs[j+1]));
+                }
+
+                // printRooms();
+            } else {
+                System.out.println("Please specify a positive integer value for the number of rooms.");
+            }
+            
+        } catch (IOException e) {
+            System.out.println("Failed to initialized game: Error in configuration file.");
+        } catch (NumberFormatException e) {
+            System.out.println("Error processing expected integer value.");
+        }
+    }
+
+    private void printRooms() {
+        for(Room room : rooms) {
+            System.out.println(room.getRoomID() + " is a " + room.getRoomType() + " and has " + room.getExits().size() + " exit(s):");
+            printExits(room);
+        }
+    }
+
+    private void printExits(Room room) {
+        HashMap<String, Room> exits = room.getExits();
+        for(String direction : exits.keySet())
+            System.out.println("  " + direction + " towards a " + exits.get(direction).getRoomType());
+    }
+
+    private Room findRoomByRoomStringID(String roomStringID) {
+        for(Room room : rooms)
+            if(room.getRoomStringID().equals(roomStringID))
+                return room;
+        return null;
+    }
+
+    public void play() {
+        int startRoomID = (int) Math.random() * rooms.size();
+        String playerName;
+        Scanner sc = new Scanner(System.in);
+        boolean finished = false;
+        String commandString;
+
+        currentRoom = rooms.get(startRoomID);
+
+        System.out.print("What is your name? ");
+        playerName = sc.nextLine();
+
+        System.out.println("Welcome, " + playerName + "!");
+
+        do {
+            Command currentCommand;
+
+            System.out.println("You are in a " + currentRoom.getRoomType());
+            System.out.println("You can go...");
+            printExits(currentRoom);
+            System.out.print("> ");
+            commandString = sc.nextLine();
+            currentCommand = new Command(commandString);
+            
+            switch(currentCommand.getCommandType()) {
+                case GOTO:
+                    String direction = currentCommand.getCommandArguments()[0];
+                    if(!move(direction)) System.out.println("There's nowhere to go there.");
+                    break;
+                case QUIT:
+                    System.out.println("Bye!");
+                    finished = true;
+                    break;
+                case UNDEFINED:
+                    System.out.println("You can't do that.");
+                    break;
+            }
+        } while(!finished);
+
+        sc.close();
+    }
+
+    private boolean move(String destination) {
+        if(currentRoom.getExits().containsKey(destination)) {
+            currentRoom = currentRoom.getExits().get(destination);
+            return true;
+        } else return false;
+    }
+
+    public static void main(String[] args) {
         if(args.length < 1) {
             System.out.println("Usage: java Game /path/to/configuration/file.txt");
             System.exit(0);
         }
-
-        rooms = initializeGame(args[0]);
-        
-        if(rooms == null) {
-            System.out.println("Error in processing configuration file.");
-            System.exit(0);
-        }
-        
-        System.out.println("Who are you?");
-
-        playerName = sc.nextLine();
-
-        p = new Player(playerName);
-
-        play(p, rooms, rooms.get(0));
-
-        sc.close();
-    }
-
-    private static void play(Player p, List<Room> rooms, Room currentRoom) {
-        boolean finished = false;
-        Scanner sc = new Scanner(System.in);
-        String commandString = null;
-
-        while(!finished) {
-            List<Room> destinations = null;
-
-            System.out.println("You are in Room " + currentRoom.getRoomID() + ".");
-            System.out.println("You can go to Rooms ");
-            destinations = currentRoom.getAdjacentRooms();
-            for(Room destination : destinations)
-                System.out.print(destination.getRoomID() + " ");
-            System.out.print("> ");
-            commandString = sc.nextLine();
-            switch(Parser.parseCommandType(commandString)) {
-                case GOTO:
-                    Room tempRoom = Parser.parseGotoCommand(commandString, currentRoom);
-                    if(tempRoom == null) System.out.println("You can't go there.");
-                    else currentRoom = tempRoom;
-                    break;
-                case QUIT:
-                    System.out.println("Goodbye!");
-                    finished = true;
-                    break;
-                case UNDEFINED:
-                    System.out.println("Command not found.");
-            }
-        }
-        sc.close();
-    }
-
-    private static List<Room> initializeGame(String gameConfigFile) {
-        List<Room> rooms = null;
-        try(BufferedReader br = new BufferedReader(new FileReader(gameConfigFile))) {
-            String in = null;
-            rooms = new LinkedList<Room>();
-
-            in = br.readLine();
-            if(in != null) {
-                String[] roomIDs = in.split(" ");
-                for(String roomID :  roomIDs)
-                    rooms.add(new Room(Integer.parseInt(roomID)));
-                // printRooms(rooms);
-            }
-
-            while((in = br.readLine()) != null) {
-                String[] roomData = in.split(" ");
-                int roomID = Integer.parseInt(roomData[0]);
-                Room room = findRoom(rooms, roomID);
-
-                for(int i = 1; i < roomData.length; i++)
-                    room.addAdjacentRoom(findRoom(rooms, Integer.parseInt(roomData[i])));
-            }
-
-            // printRooms(rooms);
-            return rooms;
-        } catch(IOException ex) {
-            System.out.println("Game configuration file not found.");
-        }
-
-        return null;
-    }
-
-    private static Room findRoom(List<Room> rooms, int roomID) {
-        for(Room room : rooms)
-            if(room.getRoomID() == roomID) return room;
-        
-        return null;
-    }
-
-    private static void printRooms(List<Room> rooms) {
-        System.out.println("There are " + rooms.size() + " rooms.");
-        for(Room room : rooms) {
-            System.out.println("Room  ID: " + room.getRoomID());
-            List<Room> adjacentRooms = room.getAdjacentRooms();
-            System.out.print("Adjacent to: ");
-            for(Room adjacentRoom : adjacentRooms)
-                System.out.println(adjacentRoom.getRoomID() + " ");
-            System.out.println();
-        }
+        Game g = new Game(args[0]);
+        g.play();
     }
 }

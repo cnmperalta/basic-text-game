@@ -1,9 +1,17 @@
-1 2 3 4 5 6 7 8
-1 2 5 4
-2 1 6 3
-3 2 7 4
-4 3 8 1
-5 1
-6 2
-7 3
-8 4
+8
+corridor-0
+corridor-1
+corridor-2
+corridor-3
+classroom-0
+classroom-1
+classroom-2
+classroom-3
+corridor-0 east corridor-3 south corridor-1 southeast classroom-0
+corridor-1 north corridor-0 northeast classroom-1 east corridor-2
+corridor-2 west corridor-1 northwest classroom-2 north corridor-3
+corridor-3 west corridor-0 southwest classroom-3 south corridor-2
+classroom-0 northwest corridor-0
+classroom-1 southwest corridor-1
+classroom-2 southeast corridor-2
+classroom-3 northeast corridor-3
