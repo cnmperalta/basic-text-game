@@ -1,11 +1,14 @@
 package game.entities;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Room {
     private int roomID;
     private String roomStringID;
     private String roomType;
+    private List<Item> items;
     private HashMap<String, Room> exits;
 
     public Room() {}
@@ -19,6 +22,7 @@ public class Room {
         this.roomStringID = roomStringID;
         roomType = roomStringID.split("-")[0];
         exits = new HashMap<String, Room>();
+        items = new LinkedList<Item>();
     }
 
     /**
@@ -54,6 +58,26 @@ public class Room {
             exits.put(direction, destination);
         else
             System.out.println("There is already a room in that direction.");
+    }
+
+    /**
+     * @return the items
+     */
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void addItem(Item item) {
+        items.add(item);
+    }
+
+    public Item removeItem(String itemName) {
+        for(Item item : items)
+            if(item.getItemName().equalsIgnoreCase(itemName)) {
+                items.remove(item);
+                return item;
+            }
+        return null;
     }
 
     @Override

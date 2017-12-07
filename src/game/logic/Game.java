@@ -8,12 +8,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import game.entities.Item;
 import game.entities.Player;
 import game.entities.Room;
 
 public class Game {
     private Player player;
     private List<Room> rooms;
+    private List<Item> items;
     private Room currentRoom;
 
     public Game(String configurationFile) {
@@ -22,8 +24,9 @@ public class Game {
 
     private void initializeRooms(String configurationFile) {
         try (BufferedReader br = new BufferedReader(new FileReader(configurationFile))) {
-            String line = br.readLine();
+            String line = br.readLine(); // read number of rooms
             int numberOfRooms = 0;
+            int numberOfItems = 0;
 
             if(line != null && (numberOfRooms = Integer.parseInt(line)) > 0) {
                 rooms = new LinkedList<Room>();
@@ -46,7 +49,25 @@ public class Game {
                         tempRoom.addExit(strs[j], findRoomByRoomStringID(strs[j+1]));
                 }
 
-                // printRooms();
+                line = br.readLine(); // read number of items
+                if(line != null && (numberOfItems = Integer.parseInt(line)) > 0) {
+                    items = new LinkedList<Item>();
+                    for(int i = 0; i < numberOfItems; i++) {
+                        String[] strs = br.readLine().split(" ");
+                        String[] itemInfo = strs[0].split("-");
+                        Room tempRoom = findRoomByRoomStringID(strs[1]);
+                        Item tempItem = new Item(i, strs[0], itemInfo[0], tempRoom);
+
+                        items.add(tempItem);
+                        tempRoom.addItem(tempItem);
+                    }
+                } else {
+                    System.out.println("Please specify a positive integer value for the number of items.");
+                }
+
+
+                printRooms();
+                printItems();
             } else {
                 System.out.println("Please specify a positive integer value for the number of rooms.");
             }
@@ -58,11 +79,23 @@ public class Game {
         }
     }
 
+    private void printItems() {
+        for(Item item : items)
+            System.out.println("There is a " + item.getItemType() + " in " + item.getLocation().getRoomStringID());
+    }
+
     private void printRooms() {
         for(Room room : rooms) {
             System.out.println(room.getRoomID() + " is a " + room.getRoomType() + " and has " + room.getExits().size() + " exit(s):");
             printExits(room);
+            System.out.println(room.getRoomID() + " also has the following items: ");
+            printItems(room);
         }
+    }
+
+    private void printItems(Room room) {
+        for(Item i : room.getItems())
+            System.out.println("  " + i.getItemType());
     }
 
     private void printExits(Room room) {
@@ -89,8 +122,9 @@ public class Game {
 
         System.out.print("What is your name? ");
         playerName = sc.nextLine();
+        player = new Player(playerName);
 
-        System.out.println("Welcome, " + playerName + "!");
+        System.out.println("Welcome, " + player.getName() + "!");
 
         do {
             Command currentCommand;

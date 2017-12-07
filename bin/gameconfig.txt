@@ -15,3 +15,8 @@ classroom-0 northwest corridor-0
 classroom-1 southwest corridor-1
 classroom-2 southeast corridor-2
 classroom-3 northeast corridor-3
+4
+knife-0 classroom-0
+sword-0 classroom-1
+shield-0 classroom-2
+hauberk-0 classroom-3
