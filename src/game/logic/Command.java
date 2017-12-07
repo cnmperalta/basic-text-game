@@ -25,6 +25,10 @@ public class Command {
     private static CommandType determineCommandType(String commandWord) {
         if(commandWord.equalsIgnoreCase("go")) return CommandType.GOTO;
         else if(commandWord.equalsIgnoreCase("quit")) return CommandType.QUIT;
+        else if(commandWord.equalsIgnoreCase("help")) return CommandType.HELP;
+        else if(commandWord.equalsIgnoreCase("pickup")) return CommandType.PICKUP;
+        else if(commandWord.equalsIgnoreCase("putdown")) return CommandType.PUTDOWN;
+        else if(commandWord.equalsIgnoreCase("inventory")) return CommandType.INVENTORY;
         else return CommandType.UNDEFINED;
     }
 

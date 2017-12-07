@@ -1,5 +1,5 @@
 package game.logic;
 
 public enum CommandType {
-    GOTO, QUIT, UNDEFINED
+    GOTO, QUIT, PICKUP, PUTDOWN, INVENTORY, HELP, UNDEFINED
 }

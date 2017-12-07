@@ -98,6 +98,11 @@ public class Game {
             System.out.println("  " + i.getItemType());
     }
 
+    private void printItems(Player player) {
+        for(Item i : player.getInventory())
+            System.out.println("  " + i.getItemType());
+    }
+
     private void printExits(Room room) {
         HashMap<String, Room> exits = room.getExits();
         for(String direction : exits.keySet())
@@ -108,6 +113,18 @@ public class Game {
         for(Room room : rooms)
             if(room.getRoomStringID().equals(roomStringID))
                 return room;
+        return null;
+    }
+
+    private Item findItemByItemType(Room room, String itemType) {
+        for(Item item : room.getItems())
+            if(item.getItemType().equalsIgnoreCase(itemType)) return item;
+        return null;
+    }
+    
+    private Item findItemByItemType(Player player, String itemType) {
+        for(Item item : player.getInventory())
+            if(item.getItemType().equalsIgnoreCase(itemType)) return item;
         return null;
     }
 
@@ -132,6 +149,10 @@ public class Game {
             System.out.println("You are in a " + currentRoom.getRoomType());
             System.out.println("You can go...");
             printExits(currentRoom);
+            if(currentRoom.getItems().size() > 0) {
+                System.out.println("There are items in the room:");
+                printItems(currentRoom);
+            }
             System.out.print("> ");
             commandString = sc.nextLine();
             currentCommand = new Command(commandString);
@@ -141,9 +162,24 @@ public class Game {
                     String direction = currentCommand.getCommandArguments()[0];
                     if(!move(direction)) System.out.println("There's nowhere to go there.");
                     break;
+                case PICKUP:
+                    if(!pickupItem(currentCommand.getCommandArguments()[0])) System.out.println("There is no " + currentCommand.getCommandArguments()[0] + "here.");
+                    break;
+                case PUTDOWN:
+                    if(!putdownItem(currentCommand.getCommandArguments()[0])) System.out.println("You don't have a/an " + currentCommand.getCommandArguments()[0] + ".");
+                    break;
+                case INVENTORY:
+                    if(player.getInventory().size() > 0) {
+                        System.out.println("You are carrying:");
+                        printItems(player);
+                    } else System.out.println("You are not carrying anything.");
+                    break;
                 case QUIT:
                     System.out.println("Bye!");
                     finished = true;
+                    break;
+                case HELP:
+                    printHelpMessage();
                     break;
                 case UNDEFINED:
                     System.out.println("You can't do that.");
@@ -152,6 +188,28 @@ public class Game {
         } while(!finished);
 
         sc.close();
+    }
+
+    private boolean putdownItem(String itemType) {
+        Item tempItem = findItemByItemType(player, itemType);
+        if(tempItem != null) {
+            player.removeItemFromInventory(tempItem.getItemName());
+            currentRoom.addItem(tempItem);
+            tempItem.setLocation(currentRoom);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean pickupItem(String itemType) {
+        Item tempItem = findItemByItemType(currentRoom, itemType);
+        if(tempItem != null) {
+            player.addItemToInventory(tempItem);
+            tempItem.setLocation(null);
+            currentRoom.removeItem(tempItem.getItemName());
+            return true;
+        }
+        return false;
     }
 
     private boolean move(String destination) {
@@ -168,5 +226,13 @@ public class Game {
         }
         Game g = new Game(args[0]);
         g.play();
+    }
+
+    private void printHelpMessage() {
+        System.out.println("Possible commands:");
+        System.out.println("  go [direction]");
+        System.out.println("  pickup [item]");
+        System.out.println("  putdown [item]");
+        System.out.println("  quit");
     }
 }
