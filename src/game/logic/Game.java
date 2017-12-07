@@ -50,7 +50,7 @@ public class Game {
             } else {
                 System.out.println("Please specify a positive integer value for the number of rooms.");
             }
-            
+
         } catch (IOException e) {
             System.out.println("Failed to initialized game: Error in configuration file.");
         } catch (NumberFormatException e) {
@@ -101,7 +101,7 @@ public class Game {
             System.out.print("> ");
             commandString = sc.nextLine();
             currentCommand = new Command(commandString);
-            
+
             switch(currentCommand.getCommandType()) {
                 case GOTO:
                     String direction = currentCommand.getCommandArguments()[0];
